@@ -1,8 +1,10 @@
 output "vnet" {
   value = {
-    id         = data.azurerm_virtual_network.existing.id
-    name       = data.azurerm_virtual_network.existing.name
-    subnet_ids = [data.azurerm_subnet.existing.id]
+    id                      = data.azurerm_virtual_network.existing.id
+    name                    = data.azurerm_virtual_network.existing.name
+    subnet_ids              = [data.azurerm_subnet.existing.id]
+    privatelink_subnet_name = azurerm_subnet.privatelink.name
+    azs                     = [for zone in data.azurerm_location.location.zone_mappings : "${var.location}-${zone.logical_zone}"]
   }
   description = "A map of vnet attributes: name, subnet_ids."
 }
@@ -58,6 +60,30 @@ output "cluster" {
     "kube_config_raw"        = nonsensitive(module.aks.kube_config_raw)
     "kube_admin_config_raw"  = nonsensitive(module.aks.kube_admin_config_raw)
     host                     = nonsensitive(module.aks.host)
+    "key_vault_principal_id" = module.aks.key_vault_secrets_provider.secret_identity[0].object_id
+    "key_vault_client_id"    = module.aks.key_vault_secrets_provider.secret_identity[0].client_id
   }
   description = "A map of AKS cluster attributes: id, name, client_certificate, client_key, cluster_ca_certificate, cluster_fqdn, oidc_issuer_url, location, kube_config_raw, kube_admin_config_raw."
+}
+
+output "linkerd" {
+  value = {
+    all_egress_traffic = module.linkerd.all_egress_traffic
+  }
+}
+
+output "nuon_dns" {
+  value = {
+    enabled = true
+    public_domain = {
+      nameservers = azurerm_dns_zone.public.name_servers
+      name        = azurerm_dns_zone.public.name
+      zone_id     = azurerm_dns_zone.public.id
+    }
+    internal_domain = {
+      nameservers = []
+      name        = azurerm_private_dns_zone.internal.name
+      zone_id     = azurerm_private_dns_zone.internal.id
+    }
+  }
 }

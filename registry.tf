@@ -4,4 +4,6 @@ resource "azurerm_container_registry" "acr" {
   location            = data.azurerm_resource_group.rg.location
   sku                 = "Premium"
   admin_enabled       = false
+
+  tags = local.default_tags
 }

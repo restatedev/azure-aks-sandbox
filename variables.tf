@@ -25,18 +25,6 @@ variable "cluster_version" {
   default     = "1.33"
 }
 
-variable "vm_size" {
-  type        = string
-  default     = "standard_d2_v4"
-  description = "The image size."
-}
-
-variable "node_count" {
-  type        = number
-  default     = 2
-  description = "The minimum number of nodes in the managed node pool."
-}
-
 variable "vnet_name" {
   type        = string
   description = "The name of the existing Virtual Network created by Bicep."
@@ -55,4 +43,33 @@ variable "private_subnet_names" {
 variable "public_subnet_names" {
   type        = string
   description = "The subnets to deploy public resources into."
+}
+
+variable "key_vault_id" {
+  type        = string
+  description = "The ID of the Key Vault."
+}
+
+variable "kyverno_policy_dir" {
+  type        = string
+  description = "Path to a directory with kyverno policy manifests."
+  default     = "./kyverno-policies"
+}
+
+variable "karpenter_default_nodepool_spec" {
+  type        = any
+  default     = null
+  description = "If specified, override the included `default` nodepool spec."
+}
+
+variable "tags" {
+  type        = map(any)
+  default     = {}
+  description = "List of custom tags to add to the install resources. Used for taxonomic purposes."
+}
+
+variable "helm_driver" {
+  type        = string
+  description = "One of 'configmap' or 'secret'"
+  default     = "secret"
 }

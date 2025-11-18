@@ -1,9 +1,10 @@
-# Azure AKS
+# Azure AKS with Karpenter and Virtual Nodes
 
-Standard Azure sandbox that provisions the following:
+Azure sandbox that provisions the following:
 
 - VPN
-- AKS Cluster
+- AKS Cluster with ACI Connector for virtual nodes
+- ACI-enabled subnet for Karpenter autoscaling
 
 ## Usage
 
@@ -57,11 +58,10 @@ This sandbox can be tested outside of `nuon` by following these steps:
 
 | Name                                                                                                                                   | Type        |
 | -------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| [azapi_resource.ssh_public_key](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource)                    | resource    |
-| [azapi_resource_action.ssh_public_key_gen](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource_action)  | resource    |
 | [azurerm_container_registry.acr](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/container_registry)   | resource    |
 | [azurerm_dns_zone.public](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dns_zone)                    | resource    |
 | [azurerm_private_dns_zone.internal](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone)  | resource    |
+| [azurerm_subnet.aci](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet)                           | resource    |
 | [random_pet.ssh_key_name](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/pet)                          | resource    |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config)      | data source |
 | [azurerm_resource_group.rg](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group)         | data source |
@@ -70,19 +70,17 @@ This sandbox can be tested outside of `nuon` by following these steps:
 
 ## Inputs
 
-| Name                                                                                          | Description                                                            | Type     | Default            | Required |
-| --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | -------- | ------------------ | :------: |
-| <a name="input_cluster_version"></a> [cluster_version](#input_cluster_version)                | The Kubernetes version to use for the AKS cluster.                     | `string` | `"1.33"`           |    no    |
-| <a name="input_internal_root_domain"></a> [internal_root_domain](#input_internal_root_domain) | The internal root domain.                                              | `string` | n/a                |   yes    |
-| <a name="input_location"></a> [location](#input_location)                                     | The location to launch the cluster in                                  | `string` | n/a                |   yes    |
-| <a name="input_node_count"></a> [node_count](#input_node_count)                               | The minimum number of nodes in the managed node pool.                  | `number` | `2`                |    no    |
-| <a name="input_nuon_id"></a> [nuon_id](#input_nuon_id)                                        | The nuon id for this install. Used for naming purposes.                | `string` | n/a                |   yes    |
-| <a name="input_private_subnet_names"></a> [private_subnet_names](#input_private_subnet_names) | The subnets to deploy private resources into.                          | `string` | n/a                |   yes    |
-| <a name="input_public_root_domain"></a> [public_root_domain](#input_public_root_domain)       | The public root domain.                                                | `string` | n/a                |   yes    |
-| <a name="input_public_subnet_names"></a> [public_subnet_names](#input_public_subnet_names)    | The subnets to deploy public resources into.                           | `string` | n/a                |   yes    |
-| <a name="input_resource_group_name"></a> [resource_group_name](#input_resource_group_name)    | The resource group name where the existing Virtual Network is located. | `string` | n/a                |   yes    |
-| <a name="input_vm_size"></a> [vm_size](#input_vm_size)                                        | The image size.                                                        | `string` | `"standard_d2_v4"` |    no    |
-| <a name="input_vnet_name"></a> [vnet_name](#input_vnet_name)                                  | The name of the existing Virtual Network created by Bicep.             | `string` | n/a                |   yes    |
+| Name                                                                                          | Description                                                            | Type     | Default  | Required |
+| --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | -------- | -------- | :------: |
+| <a name="input_cluster_version"></a> [cluster_version](#input_cluster_version)                | The Kubernetes version to use for the AKS cluster.                     | `string` | `"1.33"` |    no    |
+| <a name="input_internal_root_domain"></a> [internal_root_domain](#input_internal_root_domain) | The internal root domain.                                              | `string` | n/a      |   yes    |
+| <a name="input_location"></a> [location](#input_location)                                     | The location to launch the cluster in                                  | `string` | n/a      |   yes    |
+| <a name="input_nuon_id"></a> [nuon_id](#input_nuon_id)                                        | The nuon id for this install. Used for naming purposes.                | `string` | n/a      |   yes    |
+| <a name="input_private_subnet_names"></a> [private_subnet_names](#input_private_subnet_names) | The subnets to deploy private resources into.                          | `string` | n/a      |   yes    |
+| <a name="input_public_root_domain"></a> [public_root_domain](#input_public_root_domain)       | The public root domain.                                                | `string` | n/a      |   yes    |
+| <a name="input_public_subnet_names"></a> [public_subnet_names](#input_public_subnet_names)    | The subnets to deploy public resources into.                           | `string` | n/a      |   yes    |
+| <a name="input_resource_group_name"></a> [resource_group_name](#input_resource_group_name)    | The resource group name where the existing Virtual Network is located. | `string` | n/a      |   yes    |
+| <a name="input_vnet_name"></a> [vnet_name](#input_vnet_name)                                  | The name of the existing Virtual Network created by Bicep.             | `string` | n/a      |   yes    |
 
 ## Outputs
 
