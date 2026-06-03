@@ -45,11 +45,6 @@ reportsController:
 # configs are deleted as part of the cluster delete.
 webhooksCleanup:
   enabled: false
-  image:
-    repository: bitnamilegacy/kubectl
-policyReportsCleanup:
-  image:
-    repository: bitnamilegacy/kubectl
 
 global:
   tolerations:
